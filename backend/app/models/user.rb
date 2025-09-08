@@ -1,13 +1,10 @@
 class User < ApplicationRecord
+  include DeviseTokenAuth::Concerns::User
+
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
-
-  include DeviseTokenAuth::Concerns::User
-
-  before_validation :set_default_rank, on: :create
-  before_validation :set_default_nickname, on: :create
 
   belongs_to :smile_rank
   has_many :smile_logs, dependent: :destroy
@@ -20,7 +17,22 @@ class User < ApplicationRecord
   has_many :passive_friendships, class_name: "Friendship", foreign_key: "followed_id", dependent: :destroy
   has_many :followers, through: :passive_friendships, source: :follower
 
-   private
+  before_validation :set_default_rank, on: :create
+  before_validation :set_default_nickname, on: :create
+
+  def follow(other_user)
+    following << other_user unless self == other_user
+  end
+
+  def unfollow(other_user)
+    following.delete(other_user)
+  end
+
+  def following?(other_user)
+    following.include?(other_user)
+  end
+
+  private
 
   def set_default_rank
     # 最低ランクを割り当てる
