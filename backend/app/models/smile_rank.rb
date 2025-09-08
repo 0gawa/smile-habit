@@ -1,0 +1,2 @@
+class SmileRank < ApplicationRecord
+end

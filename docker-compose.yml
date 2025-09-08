@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:14.1
+    container_name: smile_habit_db
+    environment:
+      POSTGRES_DB: smile_habit_development
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+    container_name: smile_habit_backend
+    command: rails server -b 0.0.0.0
+    volumes:
+      - ./backend:/app # ソースコードの変更を即時反映
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_HOST=db
+      - DATABASE_USER=user
+      - DATABASE_PASSWORD=password
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: smile_habit_frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules # node_modulesはホストと共有しない
+    ports:
+      - "8081:8081"
+    # React NativeのCLIがインタラクティブに動作するために必要
+    stdin_open: true
+    tty: true
+
+volumes:
+  postgres-data:
