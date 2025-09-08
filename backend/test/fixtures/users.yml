@@ -1,0 +1,23 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  nickname: MyString
+  avatar_url: MyString
+  notification_time: 2025-09-08 10:38:30
+  photo_storage_preference: 1
+  provider: MyString
+  uid: MyString
+  email: MyString
+  total_score: 
+  smile_rank: one
+
+two:
+  nickname: MyString
+  avatar_url: MyString
+  notification_time: 2025-09-08 10:38:30
+  photo_storage_preference: 1
+  provider: MyString
+  uid: MyString
+  email: MyString
+  total_score: 
+  smile_rank: two
