@@ -1,8 +1,10 @@
 class User < ApplicationRecord
   include DeviseTokenAuth::Concerns::User
+  
+  attr_accessor :confirm_success_url
 
   devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :validatable
+         :recoverable, :rememberable, :validatable, :confirmable
 
   belongs_to :smile_rank
   has_many :smile_logs, dependent: :destroy
