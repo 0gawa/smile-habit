@@ -23,9 +23,10 @@ services:
     depends_on:
       - db
     environment:
-      - DATABASE_HOST=db
-      - DATABASE_USER=user
-      - DATABASE_PASSWORD=password
+      DATABASE_HOST: db
+      DATABASE_USER: user
+      DATABASE_PASSWORD: password
+      GOOGLE_APPLICATION_CREDENTIALS: /app/config/gcp_credentials.json
 
   frontend:
     build:
