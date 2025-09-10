@@ -34,6 +34,9 @@ class SmileAnalysisService
       scores[:energy_level_score]   * 0.05
     ).round
 
+    # 4. フィードバックを生成(ただし，簡易的である)
+    scores[:feedback] = generate_feedback(scores)
+
     scores
   end
 
@@ -51,8 +54,7 @@ class SmileAnalysisService
     end
   end
 
-  # [cite_start]以下、要件定義書のアルゴリズムに基づく各スコアの計算メソッド [cite: 172-181]
-
+  # 仕様書通りのアルゴリズム（要改善）
   def calculate_happiness_score(joy_likelihood)
     likeliness_to_score(joy_likelihood)
   end
@@ -96,5 +98,26 @@ class SmileAnalysisService
     distance = (upper_lip.position.y - lower_lip.position.y).abs
     final_score = (distance * 5).round
     [final_score, 100].min # 100点を超えないようにする
+  end
+
+  # 簡易フィードバック生成メソッド
+  def generate_feedback(scores)
+    # 最も点数が高かった項目を見つける
+    best_point = scores.except(:overall_score).max_by { |_, score| score }
+    
+    case best_point.first # best_point.first は :happiness_score などのキー
+    when :happiness_score
+      "心からのハッピーな気持ちが表情全体から伝わってきます！"
+    when :eye_brilliance_score
+      "特に目元の輝きが素晴らしいですね！心からの笑顔です！"
+    when :confidence_score
+      "自信に満ち溢れた、堂々とした素敵な笑顔です！"
+    when :warmth_score
+      "見る人を安心させるような、温かい優しさが感じられます。"
+    when :energy_level_score
+      "エネルギッシュで、周りを元気にする力強い笑顔です！"
+    else
+      "今日も素敵な笑顔ですね！"
+    end
   end
 end

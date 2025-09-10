@@ -28,6 +28,7 @@ class Api::V1::SmileLogsController < ApplicationController
     )
 
     if smile_log.save
+      update_user_stats(current_user, smile_log.overall_score)
       render json: smile_log, status: :created
     else
       render json: smile_log.errors, status: :unprocessable_entity
@@ -35,11 +36,22 @@ class Api::V1::SmileLogsController < ApplicationController
   end
 
   def index
+    smile_logs = current_user.smile_logs.order(created_at: :desc)
+    render json: smile_logs
   end
 
   private
 
-  def smile_log_params
-    params.permit(:photo, :journal_entry)
+  def update_user_stats(user, new_score)
+    # ユーザーの累計スコアを更新
+    user.increment!(:total_score, new_score)
+
+    # 新しい累計スコアで到達可能な最高ランクを取得
+    new_rank = SmileRank.where('required_score <= ?', user.total_score).order(required_score: :desc).first
+
+    # ユーザーの現在のランクと新しいランクが異なれば更新
+    if new_rank.present? && user.smile_rank_id != new_rank.id
+      user.update!(smile_rank: new_rank)
+    end
   end
 end
