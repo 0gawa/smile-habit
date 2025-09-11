@@ -1,4 +1,6 @@
 {
-  "name": "frontend",
-  "displayName": "frontend"
+  "expo": {
+    "name": "SmileHabit",
+    "slug": "smile-habit-frontend"
+  }
 }
