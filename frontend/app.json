@@ -1,6 +1,12 @@
 {
   "expo": {
     "name": "SmileHabit",
-    "slug": "smile-habit-frontend"
+    "slug": "smile-habit-frontend",
+    "android": {
+      "package": "com.anonymous.smilehabitfrontend"
+    },
+    "ios": {
+      "bundleIdentifier": "com.anonymous.smilehabitfrontend"
+    }
   }
 }
