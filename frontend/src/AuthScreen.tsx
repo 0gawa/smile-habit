@@ -1,34 +1,53 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, Alert, StyleSheet } from 'react-native';
+import { View, TextInput, Button, Alert, StyleSheet, Text } from 'react-native';
+import { isAxiosError } from 'axios';
 import api from './api';
 
-// Propsの型を定義
-interface AuthScreenProps {
+type AuthScreenProps = {
   onLoginSuccess: () => void;
-}
+};
 
 const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSignIn = async () => {
+    if (!email || !password) {
+      Alert.alert('入力エラー', 'メールアドレスとパスワードを入力してください。');
+      return;
+    }
+    setIsLoading(true);
     try {
       await api.post('/auth/sign_in', { email, password });
       onLoginSuccess();
     } catch (error) {
-      Alert.alert('ログイン失敗', 'メールアドレスかパスワードが違います。');
+      let errorMessage = '予期せぬエラーが発生しました。';
+      if (isAxiosError(error)) {
+        if (error.response) {
+          // サーバーからのレスポンスがある場合 (401 Unauthorizedなど)
+          errorMessage = 'メールアドレスかパスワードが正しくありません。';
+        } else if (error.request) {
+          // サーバーにリクエストが到達しなかった場合 (ネットワークエラーなど)
+          errorMessage = 'ネットワークに接続できませんでした。接続を確認してください。';
+        }
+      }
+      Alert.alert('ログイン失敗', errorMessage);
+      console.error(error);
+      setIsLoading(false); 
     }
   };
 
   return (
     <View style={styles.container}>
+      <Text style={styles.title}>Smile Habit</Text>
       <TextInput
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
         style={styles.input}
-        autoCapitalize="none"
         keyboardType="email-address"
+        autoCapitalize="none"
       />
       <TextInput
         placeholder="Password"
@@ -37,14 +56,33 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
         style={styles.input}
         secureTextEntry
       />
-      <Button title="サインイン" onPress={handleSignIn} />
+      <Button title={isLoading ? "サインイン中..." : "サインイン"} onPress={handleSignIn} disabled={isLoading} />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20 },
-  input: { height: 40, borderColor: 'gray', borderWidth: 1, marginBottom: 10, padding: 10, borderRadius: 5 },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 20,
+    backgroundColor: '#f5f5f5',
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 40,
+  },
+  input: {
+    height: 50,
+    borderColor: '#ddd',
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 15,
+    paddingHorizontal: 15,
+    backgroundColor: '#fff',
+  },
 });
 
 export default AuthScreen;

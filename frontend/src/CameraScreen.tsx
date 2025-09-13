@@ -23,7 +23,7 @@ const CameraScreen: React.FC<Props> = ({ navigation }) => {
   // 画面が表示されるたびにカメラの権限を確認
   useEffect(() => {
     const checkPermission = async () => {
-      const status = await Camera.getCameraPermissionStatus();
+      const status = Camera.getCameraPermissionStatus();
       if (status !== 'granted') {
         const newStatus = await Camera.requestCameraPermission();
         setHasPermission(newStatus === 'granted');

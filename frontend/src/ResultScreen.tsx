@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-// App.tsxで定義した型をインポート
+// App.tsxを参照
 type RootStackParamList = {
   Auth: undefined;
   Camera: undefined;

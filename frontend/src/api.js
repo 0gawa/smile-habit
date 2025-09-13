@@ -1,7 +1,6 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// バックエンドAPIのベースURL（Docker環境を想定）
 const API_URL = 'http://localhost:3000';
 
 const api = axios.create({
