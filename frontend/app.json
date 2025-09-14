@@ -1,4 +1,15 @@
 {
-  "name": "frontend",
-  "displayName": "frontend"
+  "expo": {
+    "name": "SmileHabit",
+    "slug": "smile-habit-frontend",
+    "android": {
+      "package": "com.anonymous.smilehabitfrontend"
+    },
+    "ios": {
+      "bundleIdentifier": "com.anonymous.smilehabitfrontend",
+      "infoPlist": {
+        "NSCameraUsageDescription": "笑顔を撮影するためにカメラを使用します。"
+      }
+    }
+  }
 }

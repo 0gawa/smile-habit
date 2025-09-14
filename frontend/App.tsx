@@ -1,83 +1,88 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-// react-native-vision-cameraのカメラ機能とパーミッションリクエスト機能をインポート
-import { Camera } from 'react-native-vision-camera';
 
+import SplashScreen from './src/SplashScreen';
 import AuthScreen from './src/AuthScreen';
 import CameraScreen from './src/CameraScreen';
 import ResultScreen from './src/ResultScreen';
 
-/**
- * React Navigationの画面スタックと、各画面が受け取るパラメータの型を定義します。
- * - `undefined` は、その画面がパラメータを受け取らないことを意味します。
- * - `Result`画面は、`result`というキーで分析結果オブジェクトを受け取ります。
- */
-type RootStackParamList = {
-  Auth: undefined;
-  Camera: undefined;
-  Result: { result: any }; // APIレスポンスの型が固まったら、anyを具体的な型に置き換えるとより安全になります
+// 画面遷移時に渡すパラメータの型を定義します
+export type RootStackParamList = {
+  Auth: undefined; // Auth画面はパラメータを受け取りません
+  Camera: undefined; // Camera画面もパラメータを受け取りません
+  Result: { result: any }; // Result画面は'result'という名前のパラメータを受け取ります
 };
 
-// 型定義を使ってStackNavigatorを作成
+// 型定義を使ってナビゲーションスタックを作成します
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-const App: React.FC = () => {
-  // ログイン状態を管理するstate。型を<boolean>で明示的に指定
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+function App() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    // カメラのパーミッション（利用許可）をリクエストする非同期関数
-    const requestCameraPermission = async () => {
-      await Camera.requestCameraPermission();
-    };
-
-    // AsyncStorageに保存された認証情報をもとにログイン状態をチェックする非同期関数
-    const checkLoginStatus = async () => {
-      const authHeaders = await AsyncStorage.getItem('@auth_headers');
-      // 認証情報が存在すれば、ログイン済みと判断
-      if (authHeaders) {
-        setIsLoggedIn(true);
+    const bootstrapAsync = async () => {
+      try {
+        // AsyncStorageから認証情報を安全に読み込みます
+        const authHeaders = await AsyncStorage.getItem('@auth_headers');
+        // 認証情報が存在すれば、ログイン済みと判断します
+        if (authHeaders) {
+          setIsLoggedIn(true);
+        }
+      } catch (e) {
+        // 万が一、読み込みに失敗した場合のエラーハンドリング
+        console.error('Failed to load auth headers.', e);
       }
+      // 全ての準備が完了したので、ローディング状態を解除します
+      setIsLoading(false);
     };
 
-    requestCameraPermission();
-    checkLoginStatus();
+    bootstrapAsync();
+  }, []); // アプリ起動時の非同期処理
+
+  // useCallbackで関数をメモ化し、不要な再レンダリングを防ぎます
+  const handleLoginSuccess = useCallback(() => {
+    setIsLoggedIn(true);
   }, []);
 
-  // AuthScreenから呼び出されるログイン成功時のコールバック関数
-  const handleLoginSuccess = (): void => {
-    setIsLoggedIn(true);
-  };
+  if (isLoading) {
+    return <SplashScreen />;
+  }
+
+  if (!isLoggedIn) {
+    return (
+      <NavigationContainer>
+        <Stack.Navigator>
+          <Stack.Screen
+            name="Auth"
+            options={{ headerShown: false }}
+            component={() => <AuthScreen onLoginSuccess={handleLoginSuccess}/>}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    );
+  }
 
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        {isLoggedIn ? (
-          <>
-            <Stack.Screen 
-              name="Camera" 
-              component={CameraScreen} 
-              options={{ title: '今日の笑顔' }} 
-            />
-            <Stack.Screen 
-              name="Result" 
-              component={ResultScreen} 
-              options={{ title: '分析結果' }} 
-            />
-          </>
-        ) : (
-          <Stack.Screen name="Auth" options={{ title: 'ログイン' }}>
-            {/* AuthScreenコンポーネントに、ナビゲーション用のpropsと
-              ログイン成功時に呼び出すための関数(onLoginSuccess)を渡します。
-            */}
-            {(props) => <AuthScreen {...props} onLoginSuccess={handleLoginSuccess} />}
-          </Stack.Screen>
-        )}
+        <>
+          <Stack.Screen
+            name="Camera"
+            component={CameraScreen}
+            options={{ title: '今日の笑顔' }}
+          />
+          <Stack.Screen
+            name="Result"
+            component={ResultScreen}
+            options={{ title: '分析結果' }}
+          />
+        </>
       </Stack.Navigator>
     </NavigationContainer>
-  );
-};
+  )
+}
 
 export default App;

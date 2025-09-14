@@ -1,13 +1,8 @@
 import React from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../App';
 
-// App.tsxで定義した型をインポート
-type RootStackParamList = {
-  Auth: undefined;
-  Camera: undefined;
-  Result: { result: any };
-};
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Result'>;
 
