@@ -6,7 +6,10 @@
       "package": "com.anonymous.smilehabitfrontend"
     },
     "ios": {
-      "bundleIdentifier": "com.anonymous.smilehabitfrontend"
+      "bundleIdentifier": "com.anonymous.smilehabitfrontend",
+      "infoPlist": {
+        "NSCameraUsageDescription": "笑顔を撮影するためにカメラを使用します。"
+      }
     }
   }
 }

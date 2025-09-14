@@ -1,39 +1,32 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, Text, Button, Alert, StyleSheet, Linking, AppState } from 'react-native';
+import { View, Button, Alert, StyleSheet, Text, Linking, AppState, ActivityIndicator } from 'react-native';
 import { Camera, useCameraDevice } from 'react-native-vision-camera';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useIsFocused } from '@react-navigation/native';
 import api from './api';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-
-// App.tsxで定義した型をインポート（または再度定義）
-type RootStackParamList = {
-  Auth: undefined;
-  Camera: undefined;
-  Result: { result: any };
-};
+import type { RootStackParamList } from '../App';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Camera'>;
 
 const CameraScreen: React.FC<Props> = ({ navigation }) => {
   const device = useCameraDevice('front');
   const camera = useRef<Camera>(null);
-  const isFocused = useIsFocused();
   const [hasPermission, setHasPermission] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isFocused = useIsFocused();
 
-  // 画面が表示されるたびにカメラの権限を確認
+  const checkPermission = async () => {
+    const status = Camera.getCameraPermissionStatus();
+    if (status !== 'granted') {
+      const newStatus = await Camera.requestCameraPermission();
+      setHasPermission(newStatus === 'granted');
+    } else {
+      setHasPermission(true);
+    }
+  };
+
   useEffect(() => {
-    const checkPermission = async () => {
-      const status = Camera.getCameraPermissionStatus();
-      if (status !== 'granted') {
-        const newStatus = await Camera.requestCameraPermission();
-        setHasPermission(newStatus === 'granted');
-      } else {
-        setHasPermission(true);
-      }
-    };
     checkPermission();
-
-    // アプリがバックグラウンドから復帰した際にも権限を再チェック
     const subscription = AppState.addEventListener('change', (nextAppState) => {
       if (nextAppState === 'active') {
         checkPermission();
@@ -43,10 +36,12 @@ const CameraScreen: React.FC<Props> = ({ navigation }) => {
   }, []);
 
   const takePicture = async () => {
-    if (camera.current == null) return;
+    if (camera.current == null || isSubmitting) return;
+
+    setIsSubmitting(true);
     try {
-      const photo = await camera.current.takePhoto({});
-      
+      const photo = await camera.current.takePhoto();
+
       const formData = new FormData();
       formData.append('photo', {
         uri: `file://${photo.path}`,
@@ -63,23 +58,24 @@ const CameraScreen: React.FC<Props> = ({ navigation }) => {
     } catch (error) {
       Alert.alert('エラー', '撮影または送信に失敗しました。');
       console.error(error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // --- 権限やデバイスの状態に応じて表示を切り替え ---
-  if (!hasPermission) {
+  if (device == null || !isFocused) {
     return (
-      <View style={styles.permissionContainer}>
-        <Text>カメラの権限がありません。</Text>
-        <Button title="設定を開く" onPress={() => Linking.openSettings()} />
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color="#007AFF" />
       </View>
     );
   }
 
-  if (device == null) {
+  if (!hasPermission) {
     return (
-      <View style={styles.permissionContainer}>
-        <Text>フロントカメラが見つかりません。</Text>
+      <View style={styles.centerContainer}>
+        <Text style={styles.permissionText}>カメラの権限がありません。</Text>
+        <Button title="設定を開く" onPress={() => Linking.openSettings()} />
       </View>
     );
   }
@@ -90,11 +86,15 @@ const CameraScreen: React.FC<Props> = ({ navigation }) => {
         ref={camera}
         style={StyleSheet.absoluteFill}
         device={device}
-        isActive={isFocused} // 画面が表示されている時だけカメラを有効化
+        isActive={isFocused}
         photo={true}
       />
       <View style={styles.buttonContainer}>
-        <Button title="笑顔を撮影" onPress={takePicture} />
+        <Button
+          title={isSubmitting ? "分析中..." : "笑顔を撮影"}
+          onPress={takePicture}
+          disabled={isSubmitting}
+        />
       </View>
     </View>
   );
@@ -104,17 +104,28 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  permissionContainer: {
+  centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#000',
+  },
+  permissionText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#fff',
   },
   buttonContainer: {
     position: 'absolute',
     bottom: 50,
     alignSelf: 'center',
-    zIndex: 1, // ボタンが必ず手前に表示されるように設定
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    borderRadius: 30,
+    padding: 10,
   },
 });
 
 export default CameraScreen;
+
