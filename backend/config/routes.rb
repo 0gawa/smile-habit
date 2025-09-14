@@ -9,6 +9,7 @@ Rails.application.routes.draw do
     namespace :v1 do
       authenticate :user do
         resources :smile_logs, only: [:create, :index]
+         resource :mypage, only: [:show]
       end
     end
   end
