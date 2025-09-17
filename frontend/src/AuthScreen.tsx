@@ -9,22 +9,17 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
+import { useAuth } from './AuthContext';
 import api from './api';
 
-// onLoginSuccessという名前の関数をpropsとして受け取ることを型定義します
-type AuthScreenProps = {
-  onLoginSuccess: () => void;
-};
-
-const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
-  // 'signIn' | 'signUp' のモードを管理するstate
+const AuthScreen: React.FC = () => {
+  const { signIn } = useAuth();
   const [mode, setMode] = useState<'signIn' | 'signUp'>('signIn');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // サインイン処理
   const handleSignIn = async () => {
     if (!email || !password) {
       Alert.alert('入力エラー', 'メールアドレスとパスワードを入力してください。');
@@ -32,15 +27,13 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
     }
     setIsLoading(true);
     try {
-      await api.post('/auth/sign_in', { email, password });
-      onLoginSuccess();
+      await signIn(email, password);
     } catch (error) {
-      Alert.alert('ログイン失敗', 'メールアドレスかパスワードが正しくありません。');
+      Alert.alert('ログイン失敗', 'メールアドレスかパスワードが正しくない、またはメール認証が完了していません。');
       setIsLoading(false);
     }
   };
 
-  // サインアップ処理
   const handleSignUp = async () => {
     if (!email || !password || !passwordConfirmation) {
       Alert.alert('入力エラー', 'すべての項目を入力してください。');
@@ -52,21 +45,25 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
     }
     setIsLoading(true);
     try {
-      // バックエンドのユーザー登録APIを呼び出す
       await api.post('/auth', {
         email,
         password,
         password_confirmation: passwordConfirmation,
-        // メール認証で必要なURL（Dev ClientではダミーでOK）
         confirm_success_url: 'http://localhost:8081/confirmed',
       });
-      // devise_token_authは、登録成功時に自動でログイン状態にしてくれる
-      onLoginSuccess();
+
+      Alert.alert(
+        '登録ありがとうございます',
+        '確認メールを送信しました。メール内のリンクをクリックして、登録を完了してください。',
+        [{ text: 'OK', onPress: () => setMode('signIn') }]
+      );
+      
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.errors?.full_messages?.[0] ||
         'ユーザー登録に失敗しました。';
       Alert.alert('登録失敗', errorMessage);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -91,7 +88,6 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
         secureTextEntry
       />
 
-      {/* サインアップモードの時だけ、パスワード確認欄を表示 */}
       {mode === 'signUp' && (
         <TextInput
           placeholder="Password Confirmation"
