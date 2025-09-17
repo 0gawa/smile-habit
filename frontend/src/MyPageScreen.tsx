@@ -26,7 +26,7 @@ type MarkedDates = {
 };
 
 const MyPageScreen: React.FC<Props> = ({ navigation }) => {
-  const { user, signOut } = useAuth(); // Contextからユーザー情報とsignOut関数を取得
+  const { user, setUser, signOut } = useAuth(); // Contextからユーザー情報とsignOut関数を取得
   const [markedDates, setMarkedDates] = useState<MarkedDates>({});
   const [isLoading, setIsLoading] = useState(true);
 
@@ -35,6 +35,8 @@ const MyPageScreen: React.FC<Props> = ({ navigation }) => {
     const fetchSmileLogs = async () => {
       try {
         const response = await api.get('/api/v1/mypage');
+        console.log("マイページのレスポンス", response.data);
+        setUser(response.data.user);
         const marks: MarkedDates = {};
         response.data.smile_logs.forEach((log: { date: string; score: number }) => {
           marks[log.date] = { marked: true, dotColor: getScoreColor(log.score) };
