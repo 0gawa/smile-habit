@@ -7,8 +7,9 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      authenticate :user do
+      authenticated :user do
         resources :smile_logs, only: [:create, :index]
+        resource :mypage, only: [:show]
       end
     end
   end

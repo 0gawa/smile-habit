@@ -48,5 +48,9 @@ group :development, :test do
   gem 'letter_opener_web'
 end
 
+# 認証機能
 gem 'devise'
 gem 'devise_token_auth'
+
+# 笑顔分析
+gem 'google-cloud-vision', '~> 1.6'
