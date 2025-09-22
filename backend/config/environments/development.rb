@@ -71,4 +71,5 @@ Rails.application.configure do
   config.action_mailer.delivery_method = :letter_opener_web
   # メール内のリンクを正しく生成するための設定
   config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
+  config.action_mailer.default_options = { from: "no-replay@example.com" }
 end
