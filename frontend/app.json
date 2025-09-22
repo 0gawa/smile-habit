@@ -8,7 +8,8 @@
     "ios": {
       "bundleIdentifier": "com.anonymous.smilehabitfrontend",
       "infoPlist": {
-        "NSCameraUsageDescription": "笑顔を撮影するためにカメラを使用します。"
+        "NSCameraUsageDescription": "笑顔を撮影するためにカメラを使用します。",
+        "NSPhotoLibraryUsageDescription": "分析する笑顔の写真をフォトライブラリから選択するためにアクセスします。"
       }
     }
   }

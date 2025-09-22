@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, Button, StyleSheet, SafeAreaView, ActivityIndicator, Alert } from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native'; // 画面フォーカス時に処理を実行するためのフック
+import * as ImagePicker from 'expo-image-picker'; // 画像アップロード用のライブラリ
 import { useAuth } from './AuthContext';
 import api from './api';
 import type { RootStackParamList } from '../App';
@@ -26,37 +28,91 @@ type MarkedDates = {
 };
 
 const MyPageScreen: React.FC<Props> = ({ navigation }) => {
-  const { user, setUser, signOut } = useAuth(); // Contextからユーザー情報とsignOut関数を取得
+  const { user, setUser, signOut } = useAuth();
   const [markedDates, setMarkedDates] = useState<MarkedDates>({});
   const [isLoading, setIsLoading] = useState(true);
+  const [hasCompletedToday, setHasCompletedToday] = useState(false);
 
-  // カレンダー用の笑顔ログデータのみ、この画面で取得する
-  useEffect(() => {
-    const fetchSmileLogs = async () => {
-      try {
-        const response = await api.get('/api/v1/mypage');
-        console.log("マイページのレスポンス", response.data);
-        setUser(response.data.user);
-        const marks: MarkedDates = {};
-        response.data.smile_logs.forEach((log: { date: string; score: number }) => {
-          marks[log.date] = { marked: true, dotColor: getScoreColor(log.score) };
-        });
-        setMarkedDates(marks);
-      } catch (error) {
-        Alert.alert('エラー', 'カレンダーのデータの取得に失敗しました。');
-        console.error(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchSmileLogs();
-  }, []);
+  // この画面が表示されるたびに、最新のデータをAPIから取得する
+  // これにより、撮影後に戻ってきた時にカレンダーとボタンの状態が正しく更新される
+  useFocusEffect(
+    useCallback(() => {
+      const fetchData = async () => {
+        setIsLoading(true);
+        try {
+          const response = await api.get('/api/v1/mypage');
+          setUser(response.data.user);
+          setHasCompletedToday(response.data.has_completed_today);
 
-  // スコアに応じてドットの色を変えるヘルパー関数
+          const marks: MarkedDates = {};
+          response.data.smile_logs.forEach((log: { date: string; score: number }) => {
+            marks[log.date] = { marked: true, dotColor: getScoreColor(log.score) };
+          });
+          setMarkedDates(marks);
+
+        } catch (error) {
+          Alert.alert('エラー', 'データの取得に失敗しました。');
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchData();
+    }, [setUser])
+  );
+  
+  const handleImageUpload = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (permissionResult.granted === false) {
+      Alert.alert("権限が必要です", "設定アプリからフォトライブラリへのアクセスを許可してください。");
+      return;
+    }
+
+    // 画像選択ダイアログを開く
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1], // 1:1の正方形で切り抜き
+      quality: 0.8,   // 品質の圧縮
+    });
+
+    if (!result.canceled) {
+      Alert.alert(
+        "確認",
+        "この写真で笑顔を分析しますか？\n（本日の分析回数を1回使用します）",
+        [
+          { text: "キャンセル", style: "cancel" },
+          { text: "はい", onPress: () => analyzeImage(result.assets![0].uri) }
+        ]
+      );
+    }
+  };
+
+  const analyzeImage = async (imageUri: string) => {
+    setIsLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('photo', {
+        uri: imageUri,
+        type: 'image/jpeg',
+        name: 'upload.jpg',
+      });
+
+      const response = await api.post('/api/v1/smile_logs', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      navigation.navigate('Result', { result: response.data });
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.errors?.[0] || '分析に失敗しました。';
+      Alert.alert('エラー', errorMessage);
+      setIsLoading(false);
+    }
+  };
+
   const getScoreColor = (score: number) => {
-    if (score > 80) return '#4CAF50';
-    if (score > 60) return '#FFC107';
-    return '#F44336';
+    if (score > 80) return '#4CAF50'; // 良いスコア (緑)
+    if (score > 60) return '#FFC107'; // 普通のスコア (黄)
+    return '#F44336'; // 低いスコア (赤)
   };
 
   if (isLoading) {
@@ -89,10 +145,18 @@ const MyPageScreen: React.FC<Props> = ({ navigation }) => {
           style={styles.calendar}
         />
 
-        <View style={styles.buttonContainer}>
-          <Button title="今日の笑顔を撮影する" onPress={() => navigation.navigate('Camera')} />
-        </View>
-
+        {hasCompletedToday ? (
+          <View style={styles.completedContainer}>
+            <Text style={styles.completedText}>今日のチャレンジは完了しました！</Text>
+          </View>
+        ) : (
+          <View style={styles.actionContainer}>
+            <Button title="笑顔を撮影する" onPress={() => navigation.navigate('Camera')} />
+            <View style={{ marginVertical: 5 }} />
+            <Button title="写真をアップロードして分析" onPress={handleImageUpload} />
+          </View>
+        )}
+        
         <View style={styles.logoutButton}>
           <Button title="ログアウト" onPress={signOut} color="#F44336" />
         </View>
@@ -127,12 +191,24 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 20,
   },
-  buttonContainer: {
+  actionContainer: {
+    marginTop: 'auto',
+    paddingTop: 10,
+  },
+  completedContainer: {
+    marginTop: 'auto',
+    paddingTop: 20,
     paddingBottom: 10,
+    alignItems: 'center',
+  },
+  completedText: {
+    fontSize: 16,
+    color: '#4CAF50',
+    fontWeight: 'bold',
   },
   logoutButton: {
-    marginTop: 'auto',
-  }
+    paddingTop: 10,
+  },
 });
 
 export default MyPageScreen;

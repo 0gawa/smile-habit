@@ -1,5 +1,6 @@
 class Api::V1::SmileLogsController < ApplicationController
   before_action :authenticate_user!
+  before_action :check_if_already_completed, only: [:create]
 
   def create
     unless params[:photo].present?
@@ -52,6 +53,12 @@ class Api::V1::SmileLogsController < ApplicationController
     # ユーザーの現在のランクと新しいランクが異なれば更新
     if new_rank.present? && user.smile_rank_id != new_rank.id
       user.update!(smile_rank: new_rank)
+    end
+  end
+
+  def check_if_already_completed
+    if current_user.smile_logs.where("DATE(created_at) = ?", Time.zone.now.to_date).exists?
+      render json: { errors: ["本日のチャレンジは既に完了しています。"] }, status: :forbidden
     end
   end
 end
