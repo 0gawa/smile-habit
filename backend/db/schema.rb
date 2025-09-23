@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_09_170642) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_23_083102) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -56,6 +56,18 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_09_170642) do
     t.datetime "updated_at", null: false
     t.index ["followed_id"], name: "index_friendships_on_followed_id"
     t.index ["follower_id"], name: "index_friendships_on_follower_id"
+  end
+
+  create_table "score_details", force: :cascade do |t|
+    t.bigint "smile_log_id", null: false
+    t.integer "happiness_score"
+    t.integer "eye_brilliance_score"
+    t.integer "confidence_score"
+    t.integer "warmth_score"
+    t.integer "energy_level_score"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["smile_log_id"], name: "index_score_details_on_smile_log_id"
   end
 
   create_table "smile_logs", force: :cascade do |t|
@@ -120,6 +132,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_09_170642) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "friendships", "users", column: "followed_id"
   add_foreign_key "friendships", "users", column: "follower_id"
+  add_foreign_key "score_details", "smile_logs"
   add_foreign_key "smile_logs", "users"
   add_foreign_key "user_badges", "badges"
   add_foreign_key "user_badges", "users"

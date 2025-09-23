@@ -1,9 +1,10 @@
 class Api::V1::SmileLogsController < ApplicationController
   before_action :authenticate_user!
+  before_action :check_if_already_completed, only: [:create]
 
   def create
     unless params[:photo].present?
-      render json: { errors: "Photo is required" }, status: :unprocessable_entity
+      render json: { errors: "Photo is required" }, status: :unprocessable_content
       return
     end
 
@@ -11,28 +12,33 @@ class Api::V1::SmileLogsController < ApplicationController
 
     # 分析結果が空（顔検出失敗）の場合はエラーを返す
     if analysis_result.empty?
-      render json: { errors: "Could not detect a face in the image" }, status: :unprocessable_entity
+      render json: { errors: "Could not detect a face in the image" }, status: :unprocessable_content
       return
     end
 
-    # 分析結果とジャーナルの内容でSmileLogを作成
-    smile_log = current_user.smile_logs.build(
-      journal_entry: params[:journal_entry],
-      photo: params[:photo],
-      overall_score: analysis_result[:overall_score],
-      happiness_score: analysis_result[:happiness_score],
-      eye_brilliance_score: analysis_result[:eye_brilliance_score],
-      confidence_score: analysis_result[:confidence_score],
-      warmth_score: analysis_result[:warmth_score],
-      energy_level_score: analysis_result[:energy_level_score]
-    )
+    ActiveRecord::Base.transaction do
+      @smile_log = current_user.smile_logs.create!(
+        journal_entry: params[:journal_entry],
+        photo: params[:photo],
+        overall_score: analysis_result[:overall_score]
+      )
 
-    if smile_log.save
-      update_user_stats(current_user, smile_log.overall_score)
-      render json: smile_log, status: :created
-    else
-      render json: smile_log.errors, status: :unprocessable_entity
+      @smile_log.create_score_detail!(
+        happiness_score:      analysis_result[:happiness_score],
+        eye_brilliance_score: analysis_result[:eye_brilliance_score],
+        confidence_score:     analysis_result[:confidence_score],
+        warmth_score:         analysis_result[:warmth_score],
+        energy_level_score:   analysis_result[:energy_level_score]
+      )
+
+      update_user_stats(current_user, @smile_log.overall_score)
     end
+
+    render json: {
+      id: @smile_log.id,
+      overall_score: @smile_log.overall_score,
+      feedback: analysis_result[:feedback]
+    }, status: :created
   end
 
   def index
@@ -52,6 +58,12 @@ class Api::V1::SmileLogsController < ApplicationController
     # ユーザーの現在のランクと新しいランクが異なれば更新
     if new_rank.present? && user.smile_rank_id != new_rank.id
       user.update!(smile_rank: new_rank)
+    end
+  end
+
+  def check_if_already_completed
+    if current_user.smile_logs.where("DATE(created_at) = ?", Time.zone.now.to_date).exists?
+      render json: { errors: ["本日のチャレンジは既に完了しています。"] }, status: :forbidden
     end
   end
 end
