@@ -103,7 +103,8 @@ const MyPageScreen: React.FC<Props> = ({ navigation }) => {
 
       navigation.navigate('Result', { result: response.data });
     } catch (error: any) {
-      const errorMessage = error.response?.data?.errors?.[0] || '分析に失敗しました。';
+      console.log(error.response?.data?.errors)
+      const errorMessage = error.response?.data?.errors || '分析に失敗しました。';
       Alert.alert('エラー', errorMessage);
       setIsLoading(false);
     }

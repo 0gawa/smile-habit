@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  smile_log: one
+  happiness_score: 1
+  eye_brilliance_score: 1
+  confidence_score: 1
+  warmth_score: 1
+  energy_level_score: 1
+
+two:
+  smile_log: two
+  happiness_score: 1
+  eye_brilliance_score: 1
+  confidence_score: 1
+  warmth_score: 1
+  energy_level_score: 1
