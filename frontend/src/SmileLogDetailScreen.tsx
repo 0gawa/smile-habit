@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TextInput, Button, Alert, ActivityIndicator, SafeAreaView, ScrollView } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import api from './api';
-import type { RootStackParamList } from '../App';
+import type { HomeStackParamList } from '../App';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'SmileLogDetail'>;
+type Props = NativeStackScreenProps<HomeStackParamList, 'SmileLogDetail'>;
 
 interface SmileLogDetail {
   id: number;

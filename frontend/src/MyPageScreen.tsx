@@ -6,7 +6,7 @@ import { useFocusEffect } from '@react-navigation/native'; // 画面フォーカ
 import * as ImagePicker from 'expo-image-picker'; // 画像アップロード用のライブラリ
 import { useAuth } from './AuthContext';
 import api from './api';
-import type { RootStackParamList } from '../App';
+import type { HomeStackParamList } from '../App';
 
 LocaleConfig.locales['jp'] = {
   monthNames: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
@@ -17,7 +17,7 @@ LocaleConfig.locales['jp'] = {
 };
 LocaleConfig.defaultLocale = 'jp';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'MyPage'>;
+type Props = NativeStackScreenProps<HomeStackParamList, 'MyPage'>;
 
 interface SmileLogSummary {
   id: number;
@@ -34,7 +34,7 @@ type MarkedDates = {
 };
 
 const MyPageScreen: React.FC<Props> = ({ navigation }) => {
-  const { user, setUser, signOut } = useAuth();
+  const { user, setUser } = useAuth();
   const [smileLogs, setSmileLogs] = useState<SmileLogSummary[]>([]);
   const [markedDates, setMarkedDates] = useState<MarkedDates>({});
   const [isLoading, setIsLoading] = useState(true);
@@ -176,10 +176,6 @@ const MyPageScreen: React.FC<Props> = ({ navigation }) => {
             <Button title="写真をアップロードして分析" onPress={handleImageUpload} />
           </View>
         )}
-        
-        <View style={styles.logoutButton}>
-          <Button title="ログアウト" onPress={signOut} color="#F44336" />
-        </View>
       </View>
     </SafeAreaView>
   );
