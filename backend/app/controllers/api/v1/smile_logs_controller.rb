@@ -72,13 +72,11 @@ class Api::V1::SmileLogsController < ApplicationController
   private
 
   def update_user_stats(user, new_score)
-    # ユーザーの累計スコアを更新
     user.increment!(:total_score, new_score)
 
     # 新しい累計スコアで到達可能な最高ランクを取得
-    new_rank = SmileRank.where('required_score <= ?', user.total_score).order(required_score: :desc).first
+    new_rank = SmileRank.where('required_score <= ?', user.total_score.floor).order(required_score: :desc).first
 
-    # ユーザーの現在のランクと新しいランクが異なれば更新
     if new_rank.present? && user.smile_rank_id != new_rank.id
       user.update!(smile_rank: new_rank)
     end

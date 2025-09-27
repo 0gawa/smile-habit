@@ -71,4 +71,12 @@ RSpec.configure do |config|
   # config.filter_gems_from_backtrace("gem name")
 
   config.include FactoryBot::Syntax::Methods
+
+  config.define_derived_metadata do |meta|
+    meta[:aggregate_failures] = true
+  end
+
+  def json
+    JSON.parse(response.body)
+  end
 end

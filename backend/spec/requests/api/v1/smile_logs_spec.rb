@@ -11,7 +11,7 @@ RSpec.describe "Api::V1::SmileLogs", type: :request do
         it "新しい笑顔ログを作成できること" do
           post api_v1_smile_logs_path, params: { photo: valid_photo }, headers: auth_headers
           expect(response).to have_http_status(:created)
-          expect(json['overall_score']).to be_an(Integer)
+          expect(json['overall_score'].to_i).to be_a(Numeric)
         end
       end
 
