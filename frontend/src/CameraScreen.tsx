@@ -4,9 +4,9 @@ import { Camera, useCameraDevice } from 'react-native-vision-camera';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useIsFocused } from '@react-navigation/native';
 import api from './api';
-import type { RootStackParamList } from '../App';
+import type { HomeStackParamList } from '../App';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Camera'>;
+type Props = NativeStackScreenProps<HomeStackParamList, 'Camera'>;
 
 const CameraScreen: React.FC<Props> = ({ navigation }) => {
   const device = useCameraDevice('front');
@@ -128,4 +128,3 @@ const styles = StyleSheet.create({
 });
 
 export default CameraScreen;
-
