@@ -9,6 +9,13 @@ Rails.application.routes.draw do
     namespace :v1 do
       resources :smile_logs, only: [:create, :index, :show, :update]
       resource :mypage, only: [:show]
+
+      resources :users, only: [] do
+        collection do
+          get :search
+        end
+      end
+      resources :friendships, only: [:index, :create, :destroy]
     end
   end
 end
