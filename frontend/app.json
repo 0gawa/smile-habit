@@ -11,6 +11,11 @@
         "NSCameraUsageDescription": "笑顔を撮影するためにカメラを使用します。",
         "NSPhotoLibraryUsageDescription": "分析する笑顔の写真をフォトライブラリから選択するためにアクセスします。"
       }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "0d7d74ab-4e65-4af7-960d-3b225bb11914"
+      }
     }
   }
 }
