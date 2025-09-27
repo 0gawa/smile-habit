@@ -1,6 +1,21 @@
 class Api::V1::SmileLogsController < ApplicationController
   before_action :authenticate_user!
   before_action :check_if_already_completed, only: [:create]
+  before_action :set_smile_log, only: [:show, :update]
+
+  def show
+    photo_url = @smile_log.photo.attached? ? url_for(@smile_log.photo) : nil
+
+    render json: {
+      id: @smile_log.id,
+      date: @smile_log.created_at.to_date.to_s,
+      overall_score: @smile_log.overall_score,
+      journal_entry: @smile_log.journal_entry,
+      photo_url: photo_url,
+      # score_detailはPremiumプランで実装
+      # feedbackはサービスオブジェクトが生成するため、ここでは返さない
+    }
+  end
 
   def create
     unless params[:photo].present?
@@ -46,6 +61,14 @@ class Api::V1::SmileLogsController < ApplicationController
     render json: smile_logs
   end
 
+  def update
+    if @smile_log.update(smile_log_params)
+      render json: @smile_log, status: :ok
+    else
+      render json: { errors: @smile_log.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
   private
 
   def update_user_stats(user, new_score)
@@ -65,5 +88,13 @@ class Api::V1::SmileLogsController < ApplicationController
     if current_user.smile_logs.where("DATE(created_at) = ?", Time.zone.now.to_date).exists?
       render json: { errors: ["本日のチャレンジは既に完了しています。"] }, status: :forbidden
     end
+  end
+
+  def set_smile_log
+    @smile_log = current_user.smile_logs.find(params[:id])
+  end
+  
+  def smile_log_params
+    params.require(:smile_log).permit(:journal_entry)
   end
 end

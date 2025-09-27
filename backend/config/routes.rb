@@ -7,7 +7,7 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      resources :smile_logs, only: [:create, :index]
+      resources :smile_logs, only: [:create, :index, :show, :update]
       resource :mypage, only: [:show]
     end
   end

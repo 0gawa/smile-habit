@@ -7,6 +7,7 @@ class Api::V1::MypagesController < ApplicationController
     has_completed_today = current_user.smile_logs.where("DATE(created_at) = ?", Time.zone.now.to_date).exists?
     smile_logs_for_calendar = current_user.smile_logs.order(created_at: :asc).map do |log|
       {
+        id: log.id, 
         date: log.created_at.to_date.to_s, # "YYYY-MM-DD"形式
         score: log.overall_score
       }

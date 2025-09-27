@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, Button, StyleSheet, SafeAreaView, ActivityIndicator, Alert } from 'react-native';
-import { Calendar, LocaleConfig } from 'react-native-calendars';
+import { Calendar, LocaleConfig, DateData } from 'react-native-calendars';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native'; // 画面フォーカス時に処理を実行するためのフック
 import * as ImagePicker from 'expo-image-picker'; // 画像アップロード用のライブラリ
@@ -19,6 +19,12 @@ LocaleConfig.defaultLocale = 'jp';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MyPage'>;
 
+interface SmileLogSummary {
+  id: number;
+  date: string;
+  score: number;
+}
+
 // カレンダーに表示するマークの型を定義
 type MarkedDates = {
   [date: string]: {
@@ -29,6 +35,7 @@ type MarkedDates = {
 
 const MyPageScreen: React.FC<Props> = ({ navigation }) => {
   const { user, setUser, signOut } = useAuth();
+  const [smileLogs, setSmileLogs] = useState<SmileLogSummary[]>([]);
   const [markedDates, setMarkedDates] = useState<MarkedDates>({});
   const [isLoading, setIsLoading] = useState(true);
   const [hasCompletedToday, setHasCompletedToday] = useState(false);
@@ -43,6 +50,9 @@ const MyPageScreen: React.FC<Props> = ({ navigation }) => {
           const response = await api.get('/api/v1/mypage');
           setUser(response.data.user);
           setHasCompletedToday(response.data.has_completed_today);
+
+          const logs: SmileLogSummary[] = response.data.smile_logs;
+          setSmileLogs(logs);
 
           const marks: MarkedDates = {};
           response.data.smile_logs.forEach((log: { date: string; score: number }) => {
@@ -84,6 +94,14 @@ const MyPageScreen: React.FC<Props> = ({ navigation }) => {
           { text: "はい", onPress: () => analyzeImage(result.assets![0].uri) }
         ]
       );
+    }
+  };
+
+  const handleDayPress = (day: DateData ) => {
+    const logId = smileLogs.find(log => log.date === day.dateString)?.id;
+    if (logId) {
+      // ログがあれば、IDを渡して詳細画面に遷移
+      navigation.navigate('SmileLogDetail', { smileLogId: logId });
     }
   };
 
@@ -143,6 +161,7 @@ const MyPageScreen: React.FC<Props> = ({ navigation }) => {
 
         <Calendar
           markedDates={markedDates}
+          onDayPress={handleDayPress}
           style={styles.calendar}
         />
 
