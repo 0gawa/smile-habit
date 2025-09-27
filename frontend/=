@@ -1,6 +1,0 @@
-› Installing 1 SDK 51.0.0 compatible native module and 2 other packages using yarn
-> yarn add react-native-screens@3.31.1 4.0.0 react-navigation/native-stack
-yarn add v1.22.22
-[1/5] Validating package.json...
-[2/5] Resolving packages...
-info Visit https://yarnpkg.com/en/docs/cli/add for documentation about this command.

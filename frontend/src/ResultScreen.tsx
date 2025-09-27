@@ -1,10 +1,9 @@
 import React from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../App';
+import type { HomeStackParamList } from '../App';
 
-
-type Props = NativeStackScreenProps<RootStackParamList, 'Result'>;
+type Props = NativeStackScreenProps<HomeStackParamList, 'Result'>;
 
 const ResultScreen: React.FC<Props> = ({ route, navigation }) => {
   // route.paramsから分析結果を受け取る
