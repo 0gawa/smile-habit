@@ -10,6 +10,13 @@ Rails.application.routes.draw do
       resources :smile_logs, only: [:create, :index, :show, :update]
       resources :rankings, only: [:index]
       resource :mypage, only: [:show]
+
+      resources :users, only: [] do
+        collection do
+          get :search
+        end
+      end
+      resources :friendships, only: [:index, :create, :destroy]
     end
   end
 end

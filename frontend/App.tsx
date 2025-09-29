@@ -12,7 +12,7 @@ import MyPageScreen from './src/MyPageScreen';
 import CameraScreen from './src/CameraScreen';
 import ResultScreen from './src/ResultScreen';
 import SmileLogDetailScreen from './src/SmileLogDetailScreen';
-// import FriendsScreen from './src/FriendsScreen';
+import FriendsScreen from './src/FriendsScreen';
 import SettingsScreen from './src/SettingsScreen';
 import RankingScreen from './src/RankingScreen';
 
@@ -72,8 +72,8 @@ const MainTabs = () => (
     })}
   >
     <Tab.Screen name="Home" component={HomeStack} options={{ title: 'ホーム' }} />
-    {/* <Tab.Screen name="Friends" component={FriendsScreen} options={{ title: 'フレンド' }} /> */}
     <Tab.Screen name="Ranking" component={RankingScreen} options={{ title: 'ランキング' }} />
+    <Tab.Screen name="Friends" component={FriendsScreen} options={{ title: 'フレンド' }} />
     <Tab.Screen name="Settings" component={SettingsScreen} options={{ title: '設定' }} />
   </Tab.Navigator>
 );
