@@ -1,4 +1,6 @@
 class Api::V1::FriendshipsController < ApplicationController
+  before_action :authenticate_user!
+  
   def index
     friends = current_user.following.includes(:smile_rank) # N+1問題を避ける
     render json: friends.map do |friend|

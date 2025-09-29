@@ -1,4 +1,6 @@
 class Api::V1::UsersController < ApplicationController
+  before_action :authenticate_user!
+  
   def search
     query = params[:query]
     if query.present? && query.length >= 2
