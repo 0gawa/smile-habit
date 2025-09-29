@@ -11,23 +11,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. リポジトリのコードをチェックアウト
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      # 2. Docker Composeを使って、テスト用のコンテナをビルド
       - name: Build the stack
-        run: docker-compose build
+        run: docker compose build
 
-      # 3. テスト用のデータベースを作成
-      #    -T オプションは、ttyを割り当てないためにCI環境で必要
       - name: Create test database
-        run: docker-compose run --rm -T -e "RAILS_ENV=test" backend rails db:create
+        run: docker compose run --rm -T -e "RAILS_ENV=test" backend rails db:create
 
-      # 4. データベースのスキーマをロード
       - name: Load database schema
-        run: docker-compose run --rm -T -e "RAILS_ENV=test" backend rails db:schema:load
+        run: docker compose run --rm -T -e "RAILS_ENV=test" backend rails db:schema:load
       
-      # 5. RSpecテストを実行
       - name: Run RSpec tests
-        run: docker-compose run --rm -T -e "RAILS_ENV=test" backend rspec
+        run: docker compose run --rm -T -e "RAILS_ENV=test" backend rspec
