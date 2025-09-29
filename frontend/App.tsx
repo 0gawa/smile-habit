@@ -14,6 +14,7 @@ import ResultScreen from './src/ResultScreen';
 import SmileLogDetailScreen from './src/SmileLogDetailScreen';
 import FriendsScreen from './src/FriendsScreen';
 import SettingsScreen from './src/SettingsScreen';
+import RankingScreen from './src/RankingScreen';
 
 export type HomeStackParamList = {
   MyPage: undefined;
@@ -26,6 +27,7 @@ export type MainTabParamList = {
   Home: undefined;
   Friends: undefined;
   Settings: undefined;
+  Ranking: undefined;
 };
 
 export type RootStackParamList = {
@@ -56,6 +58,8 @@ const MainTabs = () => (
           iconName = focused ? 'home' : 'home-outline';
         } else if (route.name === 'Friends') {
           iconName = focused ? 'people' : 'people-outline';
+        } else if (route.name === 'Ranking') {
+          iconName = focused ? 'trophy' : 'trophy-outline';
         } else if (route.name === 'Settings') {
           iconName = focused ? 'settings' : 'settings-outline';
         }
@@ -68,6 +72,7 @@ const MainTabs = () => (
     })}
   >
     <Tab.Screen name="Home" component={HomeStack} options={{ title: 'ホーム' }} />
+    <Tab.Screen name="Ranking" component={RankingScreen} options={{ title: 'ランキング' }} />
     <Tab.Screen name="Friends" component={FriendsScreen} options={{ title: 'フレンド' }} />
     <Tab.Screen name="Settings" component={SettingsScreen} options={{ title: '設定' }} />
   </Tab.Navigator>
