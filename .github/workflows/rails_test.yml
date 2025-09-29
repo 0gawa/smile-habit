@@ -1,4 +1,4 @@
-name: Rails CI
+name: Rails CI with Docker
 
 on:
   push:
@@ -10,56 +10,24 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:14.1
-        env:
-          POSTGRES_USER: rails
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: smile_habit_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
+      # 1. リポジトリのコードをチェックアウト
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.2.2'
-          bundler-cache: true # Gemのインストールをキャッシュして高速化
+      # 2. Docker Composeを使って、テスト用のコンテナをビルド
+      - name: Build the stack
+        run: docker-compose build
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+      # 3. テスト用のデータベースを作成
+      #    -T オプションは、ttyを割り当てないためにCI環境で必要
+      - name: Create test database
+        run: docker-compose run --rm -T -e "RAILS_ENV=test" backend rails db:create
 
-      - name: Install JavaScript dependencies
-        run: cd backend && yarn install
-
-      - name: Set up database
-        env:
-          RAILS_ENV: test
-          DATABASE_HOST: localhost
-          DATABASE_PORT: 5432
-          DATABASE_USERNAME: rails
-          DATABASE_PASSWORD: password
-        run: |
-          cd backend
-          bundle exec rails db:create
-          bundle exec rails db:schema:load
-
-      - name: Run tests
-        env:
-          RAILS_ENV: test
-          DATABASE_HOST: localhost
-          DATABASE_PORT: 5432
-          DATABASE_USERNAME: rails
-          DATABASE_PASSWORD: password
-        run: cd backend && bundle exec rspec
+      # 4. データベースのスキーマをロード
+      - name: Load database schema
+        run: docker-compose run --rm -T -e "RAILS_ENV=test" backend rails db:schema:load
+      
+      # 5. RSpecテストを実行
+      - name: Run RSpec tests
+        run: docker-compose run --rm -T -e "RAILS_ENV=test" backend rspec
