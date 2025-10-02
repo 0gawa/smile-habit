@@ -19,6 +19,8 @@ puts 'ランクデータの投入が完了しました！'
 ActiveRecord::Base.transaction do
   puts 'Creating smile ranks...'
   bronze_rank = SmileRank.find_or_create_by!(name: 'ブロンズ') { |r| r.required_score = 0 }
+  bronze_rank.image.attach(io: File.open(Rails.root.join('assets/images/bronze.png')), filename: 'bronze.png') unless bronze_rank.image.attached?
+
   silver_rank = SmileRank.find_or_create_by!(name: 'シルバー') { |r| r.required_score = 1000 }
   gold_rank   = SmileRank.find_or_create_by!(name: 'ゴールド') { |r| r.required_score = 5000 }
 

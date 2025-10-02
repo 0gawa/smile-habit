@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, Button, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, Button, StyleSheet, ActivityIndicator, Alert, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Calendar, LocaleConfig, DateData } from 'react-native-calendars';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -147,11 +147,14 @@ const MyPageScreen: React.FC<Props> = ({ navigation }) => {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.profileContainer}>
+          {user?.smile_rank?.image_url && (
+            <Image source={{ uri: user.smile_rank.image_url }} style={styles.rankImage} />
+          )}
           <Text style={styles.nickname}>{user?.nickname || 'ゲスト'}さん</Text>
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
               <Text style={styles.statLabel}>ランク</Text>
-              <Text style={styles.statValue}>{user?.smile_rank}</Text>
+              <Text style={styles.statValue}>{user?.smile_rank?.name}</Text>
             </View>
             <View style={styles.statItem}>
               <Text style={styles.statLabel}>累計スコア</Text>
@@ -202,6 +205,12 @@ const styles = StyleSheet.create({
   statItem: { alignItems: 'center' },
   statLabel: { fontSize: 14, color: '#888' },
   statValue: { fontSize: 20, fontWeight: '600' },
+  rankImage: {
+    width: 80,
+    height: 80,
+    alignSelf: 'center',
+    marginBottom: 10,
+  },
   calendar: {
     backgroundColor: '#fff',
     borderRadius: 10,
