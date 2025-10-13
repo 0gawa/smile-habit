@@ -26,16 +26,18 @@ class SmileAnalysisService
       eye_brilliance_score: calculate_eye_brilliance_score(face.joy_likelihood),
       confidence_score:     calculate_confidence_score(face.roll_angle, face.landmarks),
       warmth_score:         calculate_warmth_score(face.joy_likelihood, face.anger_likelihood),
-      energy_level_score:   calculate_energy_level_score(face.landmarks)
+      energy_level_score:   calculate_energy_level_score(face.landmarks),
+      mouth_aspect_ratio_score: calculate_mouth_aspect_ratio_score(face.landmarks)
     }
 
     # 3. 総合スコアを重み付け計算で算出
     scores[:overall_score] = (
-      scores[:happiness_score]      * 0.4 +
-      scores[:eye_brilliance_score] * 0.3 +
-      scores[:confidence_score]     * 0.15 +
+      scores[:happiness_score]      * 0.30 +
+      scores[:eye_brilliance_score] * 0.25 +
+      scores[:confidence_score]     * 0.1 +
       scores[:warmth_score]         * 0.1 +
-      scores[:energy_level_score]   * 0.05
+      scores[:energy_level_score]   * 0.05 +
+      scores[:mouth_aspect_ratio_score] * 0.20
     ).round
     
     # 4. スコアに基づいてフィードバックを生成
@@ -48,14 +50,21 @@ class SmileAnalysisService
 
   # likeliness（感情の確信度）を0-100の点数に変換するヘルパーメソッド
   def likeliness_to_score(likeliness)
-    case likeliness
-    when :VERY_LIKELY then 100
-    when :LIKELY      then 80
-    when :POSSIBLE    then 60
-    when :UNLIKELY    then 40
-    when :VERY_UNLIKELY then 10
-    else 0
-    end
+    base_score = case likeliness
+                 when :VERY_LIKELY then 95
+                 when :LIKELY      then 80
+                 when :POSSIBLE    then 60
+                 when :UNLIKELY    then 30
+                 when :VERY_UNLIKELY then 10
+                 else 0
+                 end
+
+    # Add some random variation to the score to create a wider distribution
+    variation = rand(-5..5)
+    score = base_score + variation
+
+    # Clamp the score between 0 and 100
+    [[0, score].max, 100].min
   end
 
   # 以下、要件定義書のアルゴリズムに基づく各スコアの計算メソッド
@@ -98,6 +107,28 @@ class SmileAnalysisService
     distance = (upper_lip.position.y - lower_lip.position.y).abs
     final_score = (distance * 5).round
     [final_score, 100].min
+  end
+
+  def calculate_mouth_aspect_ratio_score(landmarks)
+    mouth_left = landmarks.find { |l| l.type == :MOUTH_LEFT }
+    mouth_right = landmarks.find { |l| l.type == :MOUTH_RIGHT }
+    upper_lip = landmarks.find { |l| l.type == :UPPER_LIP }
+    lower_lip = landmarks.find { |l| l.type == :LOWER_LIP }
+    return 50 unless mouth_left && mouth_right && upper_lip && lower_lip
+
+    width = (mouth_left.position.x - mouth_right.position.x).abs
+    height = (upper_lip.position.y - lower_lip.position.y).abs
+
+    # Avoid division by zero
+    return 50 if height.zero?
+
+    aspect_ratio = width / height
+
+    # Scale the aspect ratio to a score of 0-100
+    # A wider mouth (higher aspect ratio) results in a higher score.
+    # We can adjust the scaling factor (e.g., 20) as needed.
+    score = (aspect_ratio * 20).round
+    [score, 100].min
   end
   
   def generate_feedback(scores)
