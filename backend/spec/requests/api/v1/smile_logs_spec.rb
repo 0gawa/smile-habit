@@ -9,9 +9,12 @@ RSpec.describe "Api::V1::SmileLogs", type: :request do
     context "認証済みのユーザーの場合" do
       context "今日まだチャレンジを完了していない場合" do
         it "新しい笑顔ログを作成できること" do
+          analysis_result = { overall_score: 85, happiness_score: 90, eye_brilliance_score: 80, confidence_score: 75, warmth_score: 88, energy_level_score: 70, feedback: "Great smile!" }
+          allow_any_instance_of(SmileAnalysisService).to receive(:call).and_return(analysis_result)
+
           post api_v1_smile_logs_path, params: { photo: valid_photo }, headers: auth_headers
           expect(response).to have_http_status(:created)
-          expect(json['overall_score'].to_i).to be_a(Numeric)
+          expect(JSON.parse(response.body)['overall_score'].to_i).to be_a(Numeric)
         end
       end
 
