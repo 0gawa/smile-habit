@@ -2,10 +2,15 @@ import React, { createContext, useState, useContext, useEffect, useCallback } fr
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from './api';
 
+interface SmileRank {
+  name: string;
+  image_url: string | null;
+}
+
 interface User {
   nickname: string;
   total_score: number;
-  smile_rank: string;
+  smile_rank: SmileRank | null;
 }
 
 interface AuthContextType {

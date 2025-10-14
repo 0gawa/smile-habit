@@ -1,7 +1,6 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, FlatList, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, StyleSheet, Alert, ActivityIndicator, TouchableOpacity, useColorScheme, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
 import api from './api';
 
 interface RankingUser {
@@ -10,22 +9,28 @@ interface RankingUser {
   nickname: string;
   total_score: number;
   is_current_user: boolean;
+  smile_rank: {
+    name: string;
+    image_url: string | null;
+  };
 }
+
+type RankingType = 'friends' | 'monthly' | 'all_time';
 
 const RankingScreen: React.FC = () => {
   const [ranking, setRanking] = useState<RankingUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<RankingType>('friends');
+  const colorScheme = useColorScheme();
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchRanking();
-    }, [])
-  );
+  useEffect(() => {
+    fetchRanking(activeTab);
+  }, [activeTab]);
 
-  const fetchRanking = async () => {
+  const fetchRanking = async (type: RankingType) => {
     try {
       setIsLoading(true);
-      const response = await api.get('/api/v1/rankings');
+      const response = await api.get(`/api/v1/rankings?type=${type}`);
       setRanking(response.data);
     } catch (error) {
       Alert.alert('エラー', 'ランキングの取得に失敗しました。');
@@ -37,11 +42,23 @@ const RankingScreen: React.FC = () => {
   const renderItem = ({ item }: { item: RankingUser }) => (
     <View style={[styles.itemContainer, item.is_current_user && styles.currentUserItem]}>
       <Text style={styles.rank}>{item.rank}</Text>
+      {item.smile_rank.image_url && (
+        <Image source={{ uri: item.smile_rank.image_url }} style={styles.rankIcon} />
+      )}
       <View style={styles.userInfo}>
         <Text style={styles.nickname}>{item.nickname}</Text>
         <Text style={styles.score}>{item.total_score} pts</Text>
       </View>
     </View>
+  );
+
+  const TabButton = ({ type, title }: { type: RankingType, title: string }) => (
+    <TouchableOpacity
+      style={[styles.tabButton, activeTab === type && styles.activeTabButton]}
+      onPress={() => setActiveTab(type)}
+    >
+      <Text style={[styles.tabButtonText, activeTab === type && styles.activeTabButtonText]}>{title}</Text>
+    </TouchableOpacity>
   );
 
   if (isLoading) {
@@ -50,27 +67,57 @@ const RankingScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <FlatList
-        data={ranking}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
-        ListHeaderComponent={<Text style={styles.header}>フレンドランキング</Text>}
-        onRefresh={fetchRanking}
-        refreshing={isLoading}
-      />
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>ランキング</Text>
+      </View>
+      <View style={styles.tabContainer}>
+        <TabButton type="friends" title="フレンド" />
+        <TabButton type="monthly" title="月間" />
+        <TabButton type="all_time" title="総合" />
+      </View>
+      {isLoading ? (
+        <ActivityIndicator size="large" style={styles.loader} />
+      ) : (
+        <FlatList
+          data={ranking}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id.toString()}
+          onRefresh={() => fetchRanking(activeTab)}
+          refreshing={isLoading}
+        />
+      )}
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#f5f5f5' },
+  header: { padding: 20 },
+  headerTitle: { fontSize: 28, fontWeight: 'bold', textAlign: 'center' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    padding: 20,
+  tabContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingHorizontal: 20,
+    marginBottom: 10,
   },
+  tabButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+  },
+  activeTabButton: {
+    backgroundColor: '#007AFF',
+  },
+  tabButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#007AFF',
+  },
+  activeTabButtonText: {
+    color: '#fff',
+  },
+  loader: { marginTop: 20 },
   itemContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -95,6 +142,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     width: 40,
   },
+  rankIcon: { width: 40, height: 40, marginRight: 10 },
   userInfo: {
     flex: 1,
   },

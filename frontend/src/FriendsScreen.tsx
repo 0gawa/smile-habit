@@ -1,5 +1,15 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, TextInput, Button, FlatList, StyleSheet, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  FlatList,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+  TouchableOpacity,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,8 +32,8 @@ const FriendsScreen: React.FC = () => {
   const [searchResults, setSearchResults] = useState<SearchedUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSearching, setIsSearching] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
 
-  // この画面が表示されるたびにフレンドリストを更新
   useFocusEffect(
     useCallback(() => {
       fetchFriends();
@@ -48,6 +58,7 @@ const FriendsScreen: React.FC = () => {
       return;
     }
     setIsSearching(true);
+    setHasSearched(true);
     try {
       const response = await api.get(`/api/v1/users/search?query=${searchQuery}`);
       setSearchResults(response.data);
@@ -63,7 +74,7 @@ const FriendsScreen: React.FC = () => {
       await api.post('/api/v1/friendships', { followed_id: userToAdd.id });
       Alert.alert('成功', `${userToAdd.nickname}さんをフレンドに追加しました。`);
       setSearchResults(prev => prev.filter(user => user.id !== userToAdd.id));
-      fetchFriends(); // フレンドリストを即時更新
+      fetchFriends();
     } catch (error) {
       Alert.alert('エラー', 'フレンドの追加に失敗しました。');
     }
@@ -75,20 +86,41 @@ const FriendsScreen: React.FC = () => {
       `${friendToRemove.nickname}さんをフレンドから解除しますか？`,
       [
         { text: "キャンセル", style: "cancel" },
-        { 
-          text: "解除する", 
-          style: "destructive", 
+        {
+          text: "解除する",
+          style: "destructive",
           onPress: async () => {
             try {
               await api.delete(`/api/v1/friendships/${friendToRemove.id}`);
-              Alert.alert('成功', `${friendToRemove.nickname}さんをフレンドから解除しました。`);
-              fetchFriends(); // フレンドリストを即時更新
+              fetchFriends();
             } catch (error) {
               Alert.alert('エラー', 'フレンドの解除に失敗しました。');
             }
           }
         }
       ]
+    );
+  };
+
+  const renderSearchResult = () => {
+    if (isSearching) {
+      return <ActivityIndicator style={styles.loader} />;
+    }
+    if (hasSearched && searchResults.length === 0) {
+      return <Text style={styles.emptyMessage}>ユーザーが見つかりませんでした。</Text>;
+    }
+    return (
+      <FlatList
+        data={searchResults}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <View style={styles.userItem}>
+            <Text style={styles.nickname}>{item.nickname}</Text>
+            <Button title="追加" onPress={() => handleAddFriend(item)} />
+          </View>
+        )}
+        style={styles.searchResultList}
+      />
     );
   };
 
@@ -99,31 +131,21 @@ const FriendsScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <View style={styles.searchSection}>
-          <TextInput
-            style={styles.input}
-            placeholder="ニックネームでユーザーを検索"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            onSubmitEditing={handleSearch}
-          />
-          <Button title={isSearching ? "検索中..." : "検索"} onPress={handleSearch} disabled={isSearching} />
+        <Text style={styles.header}>フレンドを探す</Text>
+        <View style={styles.card}>
+          <View style={styles.searchSection}>
+            <TextInput
+              style={styles.input}
+              placeholder="ニックネームで検索"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              onSubmitEditing={handleSearch}
+            />
+            <Button title={isSearching ? "..." : "検索"} onPress={handleSearch} disabled={isSearching} />
+          </View>
+          {hasSearched && renderSearchResult()}
         </View>
 
-        {searchResults.length > 0 && (
-          <FlatList
-            data={searchResults}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => (
-              <View style={styles.userItem}>
-                <Text>{item.nickname}</Text>
-                <Button title="追加" onPress={() => handleAddFriend(item)} />
-              </View>
-            )}
-            style={styles.searchResultList}
-          />
-        )}
-        
         <Text style={styles.header}>フレンドリスト</Text>
         <FlatList
           data={friends}
@@ -135,12 +157,13 @@ const FriendsScreen: React.FC = () => {
                 <Text style={styles.friendInfo}>Rank: {item.smile_rank} | Score: {item.total_score}</Text>
               </View>
               <TouchableOpacity onPress={() => handleRemoveFriend(item)}>
-                <Ionicons name="person-remove-outline" size={24} color="red" />
+                <Ionicons name="person-remove-outline" size={24} color="#F44336" />
               </TouchableOpacity>
             </View>
           )}
           onRefresh={fetchFriends}
           refreshing={isLoading}
+          ListEmptyComponent={<Text style={styles.emptyMessage}>まだフレンドがいません。探してみましょう！</Text>}
         />
       </View>
     </SafeAreaView>
@@ -149,16 +172,72 @@ const FriendsScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#f5f5f5' },
-  container: { flex: 1, padding: 10, backgroundColor: '#f5f5f5' },
+  container: { flex: 1 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  header: { fontSize: 22, fontWeight: 'bold', marginTop: 10, marginBottom: 10, paddingHorizontal: 10 },
-  searchSection: { flexDirection: 'row', padding: 10, backgroundColor: '#fff', borderRadius: 10 },
-  input: { flex: 1, borderColor: '#ddd', borderWidth: 1, paddingHorizontal: 10, marginRight: 10, borderRadius: 5 },
-  searchResultList: { maxHeight: 150 },
-  userItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 15, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#eee' },
-  friendItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 15, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#eee' },
-  nickname: { fontSize: 18, fontWeight: '500' },
-  friendInfo: { fontSize: 14, color: 'gray', marginTop: 4 },
+  header: { fontSize: 22, fontWeight: 'bold', marginTop: 16, marginBottom: 8, paddingHorizontal: 20 },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    marginHorizontal: 10,
+    padding: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  searchSection: {
+    flexDirection: 'row',
+  },
+  input: {
+    flex: 1,
+    borderColor: '#ddd',
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    marginRight: 10,
+    borderRadius: 8,
+    height: 44,
+  },
+  searchResultList: {
+    marginTop: 10,
+    maxHeight: 150,
+  },
+  userItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+  },
+  friendItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    marginHorizontal: 10,
+    marginBottom: 10,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+  },
+  nickname: {
+    fontSize: 18,
+    fontWeight: '500',
+  },
+  friendInfo: {
+    fontSize: 14,
+    color: 'gray',
+    marginTop: 4,
+  },
+  emptyMessage: {
+    textAlign: 'center',
+    color: 'gray',
+    paddingVertical: 20,
+  },
+  loader: {
+    marginTop: 10,
+  },
 });
 
 export default FriendsScreen;
