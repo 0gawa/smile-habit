@@ -23,20 +23,24 @@ class SmileAnalysisService
     # 2. 要件定義書に基づき、APIのレスポンスから各種スコアを算出
     scores = {
       happiness_score:      calculate_happiness_score(face.joy_likelihood),
-      eye_brilliance_score: calculate_eye_brilliance_score(face.joy_likelihood),
+      eye_brilliance_score: calculate_eye_brilliance_score(face.joy_likelihood, face.landmarks),
       confidence_score:     calculate_confidence_score(face.roll_angle, face.landmarks),
       warmth_score:         calculate_warmth_score(face.joy_likelihood, face.anger_likelihood),
       energy_level_score:   calculate_energy_level_score(face.landmarks)
     }
 
     # 3. 総合スコアを重み付け計算で算出
-    scores[:overall_score] = (
+    overall_score = (
       scores[:happiness_score]      * 0.4 +
       scores[:eye_brilliance_score] * 0.3 +
       scores[:confidence_score]     * 0.15 +
       scores[:warmth_score]         * 0.1 +
       scores[:energy_level_score]   * 0.05
-    ).round
+    )
+
+    # 信頼度で総合スコアを調整
+    adjustment_factor = ((face.detection_confidence || 0.5) + (face.landmarking_confidence || 0.5)) / 2.0
+    scores[:overall_score] = (overall_score * adjustment_factor).round
     
     # 4. スコアに基づいてフィードバックを生成
     scores[:feedback] = generate_feedback(scores)
@@ -64,9 +68,18 @@ class SmileAnalysisService
     likeliness_to_score(joy_likelihood)
   end
 
-  def calculate_eye_brilliance_score(joy_likelihood)
-    score = likeliness_to_score(joy_likelihood)
-    score > 60 ? score : score / 2
+  def calculate_eye_brilliance_score(joy_likelihood, landmarks)
+    joy_score = likeliness_to_score(joy_likelihood)
+    squint_score = calculate_eye_squint_score(landmarks)
+
+    score = joy_score > 60 ? joy_score : joy_score / 2.0
+
+    if squint_score && squint_score > 50
+      # Add a bonus for genuine eye smile, up to 20 points
+      score += (squint_score - 50) * 0.4
+    end
+
+    [100, score].min.round
   end
 
   def calculate_confidence_score(roll_angle, landmarks)
@@ -74,12 +87,32 @@ class SmileAnalysisService
 
     mouth_left = landmarks.find { |l| l.type == :MOUTH_LEFT }
     mouth_right = landmarks.find { |l| l.type == :MOUTH_RIGHT }
-    return 50 unless mouth_left && mouth_right # ランドマークがなければデフォルト値を返す
 
-    symmetry_score = 100 - ((mouth_left.position.y - mouth_right.position.y).abs * 10)
+    base_scores = [angle_score]
+    if mouth_left && mouth_right
+      base_scores << (100 - ((mouth_left.position.y - mouth_right.position.y).abs * 10))
+    end
 
-    final_score = ([angle_score, symmetry_score].sum / 2).round
-    [0, final_score].max
+    base_confidence = (base_scores.sum / base_scores.size.to_f) * 0.8
+
+    eye_squint_score = calculate_eye_squint_score(landmarks)
+    eye_confidence = (eye_squint_score || 0) * 0.2
+
+    final_score = base_confidence + eye_confidence
+    [0, final_score.round].max
+  end
+
+  def calculate_eye_squint_score(landmarks)
+    left_eye_top = landmarks.find { |l| l.type == :LEFT_EYE_TOP_BOUNDARY }
+    left_eye_bottom = landmarks.find { |l| l.type == :LEFT_EYE_BOTTOM_BOUNDARY }
+
+    if left_eye_top && left_eye_bottom
+      left_eye_aperture = (left_eye_top.position.y - left_eye_bottom.position.y).abs
+      score = 100 - (left_eye_aperture * 10)
+      return [0, [score, 100].min].max.round
+    end
+
+    nil
   end
 
   def calculate_warmth_score(joy_likelihood, anger_likelihood)
@@ -91,7 +124,7 @@ class SmileAnalysisService
   end
 
   def calculate_energy_level_score(landmarks)
-    upper_lip = landmarks.find { |l| l.type == :UPPER_Lip }
+    upper_lip = landmarks.find { |l| l.type == :UPPER_LIP }
     lower_lip = landmarks.find { |l| l.type == :LOWER_LIP }
     return 50 unless upper_lip && lower_lip # ランドマークがなければデフォルト値を返す
 
