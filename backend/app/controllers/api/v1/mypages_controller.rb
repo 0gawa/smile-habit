@@ -23,4 +23,25 @@ class Api::V1::MypagesController < ApplicationController
       has_completed_today: has_completed_today
     }
   end
+
+  def update
+    if current_user.update(user_params)
+      render json: {
+        user: {
+          nickname: current_user.nickname,
+          total_score: current_user.total_score,
+          smile_rank: current_user.smile_rank&.name || 'ランクなし',
+          image_url: current_user.image.attached? ? url_for(current_user.image) : nil
+        }
+      }, status: :ok
+    else
+      render json: { errors: current_user.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
+  private
+
+  def user_params
+    params.require(:user).permit(:name, :nickname, :image)
+  end
 end

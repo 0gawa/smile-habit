@@ -6,6 +6,7 @@ class User < ApplicationRecord
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable, :confirmable
 
+  has_one_attached :image
   belongs_to :smile_rank
   has_many :smile_logs, dependent: :destroy
   has_many :user_badges, dependent: :destroy
@@ -19,6 +20,8 @@ class User < ApplicationRecord
 
   before_validation :set_default_rank, on: :create
   before_validation :set_default_nickname, on: :create
+
+  validates :nickname, presence: true
 
   def follow(other_user)
     following << other_user unless self == other_user || following.include?(other_user)

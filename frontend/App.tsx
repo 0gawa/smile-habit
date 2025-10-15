@@ -14,6 +14,7 @@ import ResultScreen from './src/ResultScreen';
 import SmileLogDetailScreen from './src/SmileLogDetailScreen';
 import FriendsScreen from './src/FriendsScreen';
 import SettingsScreen from './src/SettingsScreen';
+import EditUserScreen from './src/EditUserScreen';
 import RankingScreen from './src/RankingScreen';
 
 export type HomeStackParamList = {
@@ -21,6 +22,11 @@ export type HomeStackParamList = {
   Camera: undefined;
   Result: { result: any };
   SmileLogDetail: { smileLogId: number };
+};
+
+export type SettingsStackParamList = {
+  Settings: undefined;
+  EditUser: undefined;
 };
 
 export type MainTabParamList = {
@@ -38,6 +44,7 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const Home = createNativeStackNavigator<HomeStackParamList>();
+const Settings = createNativeStackNavigator<SettingsStackParamList>();
 
 const HomeStack = () => (
   <Home.Navigator>
@@ -46,6 +53,13 @@ const HomeStack = () => (
     <Home.Screen name="Result" component={ResultScreen} options={{ title: '分析結果' }} />
     <Home.Screen name="SmileLogDetail" component={SmileLogDetailScreen} options={{ title: '思い出' }} />
   </Home.Navigator>
+);
+
+const SettingsStack = () => (
+  <Settings.Navigator>
+    <Settings.Screen name="Settings" component={SettingsScreen} options={{ title: '設定' }} />
+    <Settings.Screen name="EditUser" component={EditUserScreen} options={{ title: 'プロフィール編集' }} />
+  </Settings.Navigator>
 );
 
 const MainTabs = () => (
@@ -74,7 +88,7 @@ const MainTabs = () => (
     <Tab.Screen name="Home" component={HomeStack} options={{ title: 'ホーム' }} />
     <Tab.Screen name="Ranking" component={RankingScreen} options={{ title: 'ランキング' }} />
     <Tab.Screen name="Friends" component={FriendsScreen} options={{ title: 'フレンド' }} />
-    <Tab.Screen name="Settings" component={SettingsScreen} options={{ title: '設定' }} />
+    <Tab.Screen name="Settings" component={SettingsStack} options={{ title: '設定' }} />
   </Tab.Navigator>
 );
 

@@ -1,9 +1,14 @@
 import React from 'react';
+import React from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from './AuthContext';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { SettingsStackParamList } from '../App';
 
-const SettingsScreen: React.FC = () => {
+type Props = NativeStackScreenProps<SettingsStackParamList, 'Settings'>;
+
+const SettingsScreen: React.FC<Props> = ({ navigation }) => {
   const { user, signOut } = useAuth();
 
   return (
@@ -13,7 +18,8 @@ const SettingsScreen: React.FC = () => {
           <Text style={styles.greeting}>こんにちは、{user?.nickname || 'ゲスト'}さん</Text>
         </View>
         <View style={styles.actionsSection}>
-          {/* 将来的にプロフィール編集画面などへのリンクをここに追加 */}
+          <Button title="プロフィール編集" onPress={() => navigation.navigate('EditUser')} />
+          <View style={{ marginVertical: 10 }} />
           <Button title="ログアウト" onPress={signOut} color="#F44336" />
         </View>
       </View>

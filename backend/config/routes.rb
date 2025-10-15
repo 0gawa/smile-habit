@@ -9,7 +9,7 @@ Rails.application.routes.draw do
     namespace :v1 do
       resources :smile_logs, only: [:create, :index, :show, :update]
       resources :rankings, only: [:index]
-      resource :mypage, only: [:show]
+      resource :mypage, only: [:show, :update]
 
       resources :users, only: [] do
         collection do
