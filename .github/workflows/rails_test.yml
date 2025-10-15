@@ -2,23 +2,54 @@ name: Rails CI with Docker
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Compose
+        run: docker-compose --version
+
       - name: Build the stack
         run: docker compose build
 
+      - name: Start services
+        run: docker compose up -d
+
+      - name: Wait for services to be healthy
+        run: |
+          echo "Waiting for backend..."
+          # Give the backend container a moment to start up before checking
+          sleep 10
+          until docker compose exec backend echo "Backend is up"; do
+            echo "Retrying backend check..."
+            sleep 5
+          done
+          echo "Waiting for db..."
+          until docker compose exec db pg_isready -U user -d smile_habit_development; do
+            echo "Retrying db check..."
+            sleep 5
+          done
+
+      - name: Create dummy GCP credentials
+        run: echo '{}' > backend/config/gcp_credentials.json
+
       - name: Create test database
-        run: docker compose run --rm -T -e "RAILS_ENV=test" backend rails db:create
+        run: docker compose exec -T -e "RAILS_ENV=test" backend bin/rails db:create
 
       - name: Load database schema
-        run: docker compose run --rm -T -e "RAILS_ENV=test" backend rails db:schema:load
-      
+        run: docker compose exec -T -e "RAILS_ENV=test" backend bin/rails db:schema:load
+
       - name: Run RSpec tests
-        run: docker compose run --rm -T -e "RAILS_ENV=test" backend rspec
+        run: docker compose exec -T -e "RAILS_ENV=test" backend bundle exec rspec
+
+      - name: Stop services
+        if: always()
+        run: docker compose down
