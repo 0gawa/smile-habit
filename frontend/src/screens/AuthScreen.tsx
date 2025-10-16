@@ -9,8 +9,8 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
-import { useAuth } from './AuthContext';
-import api from './api';
+import { useAuth } from '../context/AuthContext';
+import api from '../api/client';
 
 const AuthScreen: React.FC = () => {
   const { signIn } = useAuth();

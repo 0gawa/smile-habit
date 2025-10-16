@@ -5,9 +5,9 @@ import { Calendar, LocaleConfig, DateData } from 'react-native-calendars';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native'; // 画面フォーカス時に処理を実行するためのフック
 import * as ImagePicker from 'expo-image-picker'; // 画像アップロード用のライブラリ
-import { useAuth } from './AuthContext';
-import api from './api';
-import type { HomeStackParamList } from '../App';
+import { useAuth } from '../context/AuthContext';
+import api from '../api/client';
+import type { HomeStackParamList } from '../navigation/types';
 
 LocaleConfig.locales['jp'] = {
   monthNames: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
