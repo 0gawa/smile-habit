@@ -80,7 +80,7 @@ const MyPageScreen: React.FC<Props> = ({ navigation }) => {
 
     // 画像選択ダイアログを開く
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ImagePicker.MediaType.Images,
       allowsEditing: true,
       aspect: [1, 1], // 1:1の正方形で切り抜き
       quality: 0.8,   // 品質の圧縮
