@@ -2,16 +2,7 @@ import React, { createContext, useState, useContext, useEffect, useCallback } fr
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../api/client';
 
-interface SmileRank {
-  name: string;
-  image_url: string | null;
-}
-
-interface User {
-  nickname: string;
-  total_score: number;
-  smile_rank: SmileRank | null;
-}
+import type { User } from '../types';
 
 interface AuthContextType {
   isLoggedIn: boolean;
