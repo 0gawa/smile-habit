@@ -6,12 +6,13 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api/client';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { SettingsStackParamList } from '../navigation/types';
+import type { User } from '../types';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'EditUser'>;
 
 const EditUserScreen: React.FC<Props> = ({ navigation }) => {
   const { user, setUser } = useAuth();
-  const [name, setName] = useState(user?.name || '');
+  const [name, setName] = useState(user?.name ?? '');
   const [nickname, setNickname] = useState(user?.nickname || '');
   const [image, setImage] = useState<string | null>(user?.image_url || null);
   const [isLoading, setIsLoading] = useState(false);
