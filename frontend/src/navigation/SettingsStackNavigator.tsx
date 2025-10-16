@@ -9,7 +9,7 @@ const Settings = createNativeStackNavigator<SettingsStackParamList>();
 
 const SettingsStackNavigator = () => (
   <Settings.Navigator>
-    <Settings.Screen name="Settings" component={SettingsScreen} options={{ title: '設定' }} />
+    <Settings.Screen name="SettingsTop" component={SettingsScreen} options={{ title: '設定' }} />
     <Settings.Screen name="EditUser" component={EditUserScreen} options={{ title: 'プロフィール編集' }} />
   </Settings.Navigator>
 );

@@ -20,7 +20,7 @@ export type HomeStackParamList = {
 
 // 設定タブ内のスタックナビゲーションの画面リスト
 export type SettingsStackParamList = {
-  Settings: undefined;
+  SettingsTop: undefined;
   EditUser: undefined;
 };
 
