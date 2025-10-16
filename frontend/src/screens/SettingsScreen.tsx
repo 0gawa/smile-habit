@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from './AuthContext';
+import { useAuth } from '../context/AuthContext';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { SettingsStackParamList } from '../App';
+import type { SettingsStackParamList } from '../navigation/types';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'Settings'>;
 

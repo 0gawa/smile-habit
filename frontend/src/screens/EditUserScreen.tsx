@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert, Image, ScrollView, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
-import { useAuth } from './AuthContext';
-import api from './api';
+import { useAuth } from '../context/AuthContext';
+import api from '../api/client';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { SettingsStackParamList } from '../App';
+import type { SettingsStackParamList } from '../navigation/types';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'EditUser'>;
 

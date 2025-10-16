@@ -3,8 +3,8 @@ import { View, Button, Alert, StyleSheet, Text, Linking, AppState, ActivityIndic
 import { Camera, useCameraDevice } from 'react-native-vision-camera';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useIsFocused } from '@react-navigation/native';
-import api from './api';
-import type { HomeStackParamList } from '../App';
+import api from '../api/client';
+import type { HomeStackParamList } from '../navigation/types';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'Camera'>;
 

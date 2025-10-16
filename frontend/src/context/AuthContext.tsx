@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import api from './api';
+import api from '../api/client';
 
 interface SmileRank {
   name: string;
