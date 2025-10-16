@@ -6,7 +6,6 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api/client';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { SettingsStackParamList } from '../navigation/types';
-import type { User } from '../types';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'EditUser'>;
 
@@ -74,7 +73,7 @@ const EditUserScreen: React.FC<Props> = ({ navigation }) => {
 
       setUser(response.data.user); // Update user in global context
       Alert.alert('Success', 'Your profile has been updated.');
-      navigation.navigate('Home');
+      navigation.goBack();
     } catch (error: any) {
       const errorMessage = error.response?.data?.errors?.join('\n') || 'An error occurred.';
       Alert.alert('Update Failed', errorMessage);
@@ -87,7 +86,7 @@ const EditUserScreen: React.FC<Props> = ({ navigation }) => {
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.imageContainer}>
-          <Image source={image ? { uri: image } : require('../assets/default-avatar.png')} style={styles.avatar} />
+          <Image source={image ? { uri: image } : require('../../assets/default-avatar.png')} style={styles.avatar} />
           <Button title="Change Photo" onPress={handleImagePick} />
         </View>
 
