@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
+import { commonStyles } from '../styles/common';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { SettingsStackParamList } from '../navigation/types';
 
@@ -11,7 +12,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
   const { user, signOut } = useAuth();
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={commonStyles.safeArea}>
       <View style={styles.container}>
         <View style={styles.profileSection}>
           <Text style={styles.greeting}>こんにちは、{user?.nickname || 'ゲスト'}さん</Text>
@@ -27,9 +28,8 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#f5f5f5' },
   container: {
-    flex: 1,
+    ...commonStyles.container,
     paddingVertical: 20,
   },
   profileSection: {

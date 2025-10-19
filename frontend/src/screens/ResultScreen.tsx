@@ -3,6 +3,7 @@ import { View, Text, Button, StyleSheet, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { HomeStackParamList } from '../navigation/types';
+import { commonStyles } from '../styles/common';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'Result'>;
 
@@ -50,13 +51,12 @@ const ResultScreen: React.FC<Props> = ({ route, navigation }) => {
 
 const styles = StyleSheet.create({
   safeArea: {
-    flex: 1,
+    ...commonStyles.safeArea,
     backgroundColor: '#fff',
   },
   container: {
-    flex: 1,
+    ...commonStyles.container,
     justifyContent: 'center',
-    padding: 20,
   },
   scoreContainer: {
     alignItems: 'center',

@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { View, Text, Button, StyleSheet, ActivityIndicator, Alert, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Calendar, LocaleConfig, DateData } from 'react-native-calendars';
+import { commonStyles } from '../styles/common';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native'; // 画面フォーカス時に処理を実行するためのフック
 import * as ImagePicker from 'expo-image-picker'; // 画像アップロード用のライブラリ
@@ -137,14 +138,14 @@ const MyPageScreen: React.FC<Props> = ({ navigation }) => {
 
   if (isLoading) {
     return (
-      <View style={styles.centerContainer}>
+      <View style={commonStyles.centerContainer}>
         <ActivityIndicator size="large" />
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={commonStyles.safeArea}>
       <View style={styles.container}>
         <View style={styles.profileContainer}>
           {user?.smile_rank?.image_url && (
@@ -186,9 +187,7 @@ const MyPageScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#f5f5f5' },
-  container: { flex: 1, padding: 20 },
-  centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  container: { ...commonStyles.container, padding: 20 },
   profileContainer: {
     backgroundColor: '#fff',
     padding: 20,

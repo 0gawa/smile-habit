@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, Alert, ActivityIndicator, TouchableOpacity, useColorScheme, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import api from '../api/client';
+import { commonStyles } from '../styles/common';
 
 interface RankingUser {
   rank: number;
@@ -62,11 +63,11 @@ const RankingScreen: React.FC = () => {
   );
 
   if (isLoading) {
-    return <View style={styles.center}><ActivityIndicator size="large" /></View>;
+    return <View style={commonStyles.centerContainer}><ActivityIndicator size="large" /></View>;
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={commonStyles.safeArea}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>ランキング</Text>
       </View>
@@ -91,10 +92,8 @@ const RankingScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#f5f5f5' },
   header: { padding: 20 },
   headerTitle: { fontSize: 28, fontWeight: 'bold', textAlign: 'center' },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   tabContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
