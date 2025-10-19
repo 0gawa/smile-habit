@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import api from '../api/client';
 import type { HomeStackParamList } from '../navigation/types';
+import { commonStyles } from '../styles/common';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'SmileLogDetail'>;
 
@@ -50,11 +51,11 @@ const SmileLogDetailScreen: React.FC<Props> = ({ route }) => {
   };
 
   if (isLoading) {
-    return <View style={styles.centerContainer}><ActivityIndicator size="large" color="#0000ff" /></View>;
+    return <View style={commonStyles.centerContainer}><ActivityIndicator size="large" color="#0000ff" /></View>;
   }
 
   if (!log) {
-    return <View style={styles.centerContainer}><Text>データが見つかりません。</Text></View>;
+    return <View style={commonStyles.centerContainer}><Text>データが見つかりません。</Text></View>;
   }
 
   return (
@@ -98,9 +99,8 @@ const SmileLogDetailScreen: React.FC<Props> = ({ route }) => {
 };
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#f7f8fa' },
-  container: { padding: 24, paddingBottom: 48 },
-  centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f7f8fa' },
+  safeArea: { ...commonStyles.safeArea, backgroundColor: '#f7f8fa' },
+  container: { ...commonStyles.container, padding: 24, paddingBottom: 48 },
   dateText: { fontSize: 18, color: '#666', textAlign: 'center', marginBottom: 20 },
   photo: { width: '100%', height: 350, borderRadius: 16, marginBottom: 24, backgroundColor: '#e9ecef' },
   photoPlaceholder: { justifyContent: 'center', alignItems: 'center' },

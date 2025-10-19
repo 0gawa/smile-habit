@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/client';
+import { commonStyles } from '../styles/common';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { SettingsStackParamList } from '../navigation/types';
 
@@ -83,7 +84,7 @@ const EditUserScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={commonStyles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.imageContainer}>
           <Image source={image ? { uri: image } : require('../../assets/default-avatar.png')} style={styles.avatar} />
@@ -119,8 +120,7 @@ const EditUserScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#f5f5f5' },
-  container: { padding: 20 },
+  container: { ...commonStyles.container, padding: 20 },
   imageContainer: { alignItems: 'center', marginBottom: 20 },
   avatar: { width: 120, height: 120, borderRadius: 60, marginBottom: 10, backgroundColor: '#ccc' },
   label: { fontSize: 16, fontWeight: 'bold', color: '#333', marginBottom: 8 },

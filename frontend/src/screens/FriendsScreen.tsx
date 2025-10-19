@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import api from '../api/client';
+import { commonStyles } from '../styles/common';
 
 interface Friend {
   id: number;
@@ -125,11 +126,11 @@ const FriendsScreen: React.FC = () => {
   };
 
   if (isLoading) {
-    return <View style={styles.center}><ActivityIndicator size="large" /></View>;
+    return <View style={commonStyles.centerContainer}><ActivityIndicator size="large" /></View>;
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={commonStyles.safeArea}>
       <View style={styles.container}>
         <Text style={styles.header}>フレンドを探す</Text>
         <View style={styles.card}>
@@ -171,9 +172,7 @@ const FriendsScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#f5f5f5' },
-  container: { flex: 1 },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  container: { ...commonStyles.container, flex: 1 },
   header: { fontSize: 22, fontWeight: 'bold', marginTop: 16, marginBottom: 8, paddingHorizontal: 20 },
   card: {
     backgroundColor: '#fff',

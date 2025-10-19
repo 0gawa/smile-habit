@@ -5,6 +5,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useIsFocused } from '@react-navigation/native';
 import api from '../api/client';
 import type { HomeStackParamList } from '../navigation/types';
+import { commonStyles } from '../styles/common';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'Camera'>;
 
@@ -65,7 +66,7 @@ const CameraScreen: React.FC<Props> = ({ navigation }) => {
 
   if (device == null || !isFocused) {
     return (
-      <View style={styles.centerContainer}>
+      <View style={commonStyles.centerContainer}>
         <ActivityIndicator size="large" color="#007AFF" />
       </View>
     );
@@ -105,9 +106,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    ...commonStyles.centerContainer,
     padding: 20,
     backgroundColor: '#000',
   },

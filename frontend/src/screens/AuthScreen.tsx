@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/client';
+import { commonStyles } from '../styles/common';
 
 const AuthScreen: React.FC = () => {
   const { signIn } = useAuth();
@@ -123,10 +124,8 @@ const AuthScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    ...commonStyles.container,
     justifyContent: 'center',
-    padding: 20,
-    backgroundColor: '#f5f5f5',
   },
   title: {
     fontSize: 32,
